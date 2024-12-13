@@ -11,30 +11,37 @@ cell_type = [
 # Grid class
 class Grid:
     """
-    
+    The grid is the representation of the plate that will grow colonies of E.coli
     """
     def __init__(self, size):
         self.size = size
-        self.grid_layout = np.zeros((size, size))
+        self.inputs = np.full(size, -1)
+        self.grid_layout = np.zeros((size, size), dtype=int)
+        self.grid_values = np.full((size, size), -1)
+        self.outputs = np.full(size, -1)
         self.active_cells = {}
 
     def show_grid(self):
         print(self.grid_layout)   
 
-    def add_cell(self, x, y, cell):
-        self.grid_layout[x][y] = np.argwhere(cell_type == cell.type)
-        self.active_cells[(cell.x, cell.y)] = cell
+    def add_input(self, x, val):
+        self.inputs[x] = val
+
+    def add_cell(self, x, y, type):
+        new_cell = cell.Cell(x,y,type)
+        self.grid_layout[x][y] = cell_type.index(type)
+        self.active_cells[(x, y)] = new_cell
 
     def reset_plate(self):
         self.grid_layout = np.zeros((self.size, self.size))
         self.active_cells = {}
 
-    def set_active_cells(self, layout):
-        non_zero_indcies = np.argwhere(layout != 0)
+    def set_active_cells(self):
+        non_zero_indcies = np.argwhere(self.grid_layout != 0)
         coordiantes = [(x,y) for x,y in non_zero_indcies]
   
         for x,y in coordiantes:
-            cell_val = layout[x][y]
+            cell_val = self.grid_layout[x][y]
             new_cell = cell.Cell(x, y, cell_type[int(cell_val)])
             self.active_cells[(x,y)] = new_cell
 
@@ -57,16 +64,39 @@ class Grid:
         plate_array = self.grid_layout.flatten()
         indicies = np.random.choice(total_cells, num_nor_gates + num_wires, replace=False)
         for i,j in enumerate(indicies):
-            if i <= num_wires:
+            if i < num_wires:
                 plate_array[j] = 1
             else:
                 plate_array[j] = 2
 
         plate_2d = plate_array.reshape(self.size, self.size)
         self.grid_layout = plate_2d
-        self.set_active_cells(self.grid_layout)
+        self.set_active_cells()
 
+    def get_prev_values(self, cell):
+        start = cell.y < 1
+        prev = cell.get_previous(self.size, start)
+        if start:
+            prev_values = [int(self.inputs[p]) for p in prev]
+        else:
+            prev_values = [int(self.grid_values[p[0]][p[1]]) for p in prev]
+        return prev_values
+        
+    def update_col(self, col_number):
+        for row in range(self.size):
+            if (row, col_number) in self.active_cells.keys():
+                cell = self.active_cells[(row, col_number)]
+                prev_values = self.get_prev_values(cell)
+                new_val = cell.update(prev_values, self.size)
+                self.grid_values[row][col_number] = new_val
 
+    def update_plate(self):
+        self.set_active_cells()
+        for col in range(self.size):
+            self.update_col(col)
+            
+            
+        
 
 if __name__ == "__main__":
     grid = Grid(10)
