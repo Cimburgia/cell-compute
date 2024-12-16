@@ -19,9 +19,8 @@ class Main_Window(QW.QMainWindow):
         super().__init__()
         self.plate = plate
         self.size = plate.size
-        self.setMinimumSize(QC.QSize(700, 500))
         self.setWindowTitle("Cell Compute")
-
+        self.setMinimumSize(500, 450)
         # Set central widget
         central_widget = QW.QWidget()
         self.setCentralWidget(central_widget)
@@ -51,7 +50,6 @@ class Main_Window(QW.QMainWindow):
         self.input_buttons = []
         for i in range(self.size):
             button = QW.QPushButton()
-            button.setMinimumSize(40, 40)
             button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             button.setStyleSheet("""
                     QPushButton {
@@ -74,13 +72,13 @@ class Main_Window(QW.QMainWindow):
             row = []
             for j in range(self.size):
                 button = QW.QPushButton()
-                button.setMinimumSize(40, 40)
                 button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
                 button.setStyleSheet("""
                         QPushButton {
                             background-color:powderblue;
                             border: none;
                             margin: 1px;
+                            color: black;
                         }
                         """)
                 button.clicked.connect(lambda checked, x=i, y=j: self.on_cell_click(x, y))
@@ -92,13 +90,13 @@ class Main_Window(QW.QMainWindow):
         self.output_buttons = []
         for i in range(self.size):
             button = QW.QPushButton()
-            button.setMinimumSize(40, 40)
             button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             button.setStyleSheet("""
                     QPushButton {
                         background-color:lavender;
                         border: none;
                         margin: 1px;
+                        color: black;
                     }
                     """)
             self.output_layout.addWidget(button, i, 0)
@@ -161,8 +159,7 @@ class Main_Window(QW.QMainWindow):
                 background-color: {color};
                 border: none;
                 margin: 1px;
-                font-weight: bold;
-                font-size: 18px;
+                color: black;
             }}
         """)
 
@@ -184,6 +181,14 @@ class Main_Window(QW.QMainWindow):
         self.plate.update_plate()
         self.update_plate_colors()
         self.update_plate_text()
+        outputs = self.plate.set_outputs()
+        for i,button in enumerate(self.output_buttons):
+            value = outputs[i]
+            if value == -1:
+                value = ''
+            else:
+                value = f'{value}'
+            button.setText(value)
 
     def on_randomize_plate_click(self):
         """
@@ -228,12 +233,13 @@ class Main_Window(QW.QMainWindow):
                     QPushButton {{
                         background-color: {color};
                         border: none;
-                        margin: 1px;   
+                        margin: 1px;
+                        color: black;   
                     }}
                 """)
 
 if __name__ == "__main__":
-    plate = grid.Grid(20)
+    plate = grid.Grid(50)
     app = QW.QApplication(sys.argv)
     window = Main_Window(plate)
     window.show()

@@ -73,7 +73,8 @@ class Cell:
                 elif values[2] < 0:
                     new_value = values[0]
                 else:
-                    new_value = random.choice([values[0], values[2]])
+                    # Make deterministic for now
+                    new_value = np.max([values[0], values[2]])
         return new_value        
             
     def nor_update(self, values):

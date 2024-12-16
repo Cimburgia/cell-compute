@@ -1,5 +1,6 @@
 import cell
 import numpy as np
+import heapq
 
 # Cell type dictionary
 cell_type = [
@@ -8,6 +9,7 @@ cell_type = [
     'nor',
     'c6_input',
     'c12_input']
+
 # Grid class
 class Grid:
     """
@@ -35,6 +37,9 @@ class Grid:
     def reset_plate(self):
         self.grid_layout = np.zeros((self.size, self.size))
         self.active_cells = {}
+
+    def reset_plate_values(self):
+        self.grid_values = np.full((self.size, self.size), -1)
 
     def set_active_cells(self):
         non_zero_indcies = np.argwhere(self.grid_layout != 0)
@@ -94,10 +99,14 @@ class Grid:
         self.set_active_cells()
         for col in range(self.size):
             self.update_col(col)
-            
-            
+
+    def set_outputs(self):
+        self.outputs = self.grid_values[:,-1]
+        return self.outputs
+
+
         
 
 if __name__ == "__main__":
-    grid = Grid(10)
+    grid = Grid(50)
     grid.show_grid()
